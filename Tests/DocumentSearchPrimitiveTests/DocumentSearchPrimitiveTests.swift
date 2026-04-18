@@ -2,6 +2,9 @@ import Testing
 import SwiftUI
 import ContentModelPrimitive
 @testable import DocumentSearchPrimitive
+import SearchPrimitive
+
+private typealias SurfaceSearchQuery = ContentModelPrimitive.SearchQuery
 
 private struct StubDocumentSearchProvider: DocumentSearchProvider {
     let documentID: DocumentID
@@ -15,7 +18,7 @@ private struct StubDocumentSearchProvider: DocumentSearchProvider {
         self.matchesByQuery = matchesByQuery
     }
 
-    func search(query: SearchQuery) -> AsyncThrowingStream<SearchMatch, Error> {
+    func search(query: SurfaceSearchQuery) -> AsyncThrowingStream<SearchMatch, Error> {
         let matches = matchesByQuery[query.text, default: []]
         return AsyncThrowingStream { continuation in
             for match in matches {
@@ -23,6 +26,19 @@ private struct StubDocumentSearchProvider: DocumentSearchProvider {
             }
             continuation.finish()
         }
+    }
+}
+
+private struct StubIndexedDocument: Indexable, Sendable {
+    let id: String
+    let title: String
+    let body: String
+
+    func indexableFields() -> [IndexableField] {
+        [
+            IndexableField(name: "title", value: title, options: .init(boost: 2.0)),
+            IndexableField(name: "body", value: body),
+        ]
     }
 }
 
@@ -104,4 +120,36 @@ private struct StubDocumentSearchProvider: DocumentSearchProvider {
         onPrevious: {},
         onDismiss: {}
     )
+}
+
+@Test func documentSearchSearchPrimitiveSupportHandlesFuzzyAndStemmedQueries() async throws {
+    let index = SearchIndex<StubIndexedDocument>(
+        analyzer: DocumentSearchSearchPrimitiveSupport.analyzer,
+        rankingAlgorithm: DocumentSearchSearchPrimitiveSupport.rankingAlgorithm
+    )
+
+    await index.index([
+        StubIndexedDocument(
+            id: "doc-1",
+            title: "Swift concurrency",
+            body: "Structured concurrency keeps Swift code responsive."
+        ),
+        StubIndexedDocument(
+            id: "doc-2",
+            title: "Running log",
+            body: "The runners were running every morning."
+        ),
+    ])
+
+    let fuzzyQuery = try #require(
+        DocumentSearchSearchPrimitiveSupport.query(for: "concurency")
+    )
+    let fuzzyResults = try await index.search(fuzzyQuery, limit: 10)
+    #expect(fuzzyResults.first?.document.id == "doc-1")
+
+    let stemmedQuery = try #require(
+        DocumentSearchSearchPrimitiveSupport.query(for: "run")
+    )
+    let stemmedResults = try await index.search(stemmedQuery, limit: 10)
+    #expect(stemmedResults.first?.document.id == "doc-2")
 }

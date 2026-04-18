@@ -18,6 +18,7 @@ let package = Package(
     dependencies: [
         .package(path: "../ContentModelPrimitive"),
         .package(path: "../ReaderChromeThemePrimitive"),
+        .package(path: "../SearchPrimitive"),
     ],
     targets: [
         .target(
@@ -25,6 +26,7 @@ let package = Package(
             dependencies: [
                 .product(name: "ContentModelPrimitive", package: "ContentModelPrimitive"),
                 .product(name: "ReaderChromeThemePrimitive", package: "ReaderChromeThemePrimitive"),
+                .product(name: "SearchPrimitive", package: "SearchPrimitive"),
             ]
         ),
         .testTarget(

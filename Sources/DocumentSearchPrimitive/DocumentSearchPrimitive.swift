@@ -1,6 +1,7 @@
 import SwiftUI
 import ContentModelPrimitive
 import ReaderChromeThemePrimitive
+import SearchPrimitive
 
 public struct DocumentSearchPresentationState: Sendable, Equatable {
     public var isVisible: Bool
@@ -18,6 +19,59 @@ public struct DocumentSearchPresentationState: Sendable, Equatable {
         self.query = query
         self.resultCount = resultCount
         self.currentResultIndex = currentResultIndex
+    }
+}
+
+public enum DocumentSearchSearchPrimitiveSupport {
+    public static var analyzer: Analyzer {
+        Analyzer(
+            filters: [
+                LowercaseFilter(),
+                StopWordFilter(),
+                StemmingFilter(),
+            ]
+        )
+    }
+
+    public static var rankingAlgorithm: RankingAlgorithm {
+        .bm25()
+    }
+
+    public static func query(
+        for text: String
+    ) -> SearchPrimitive.SearchQuery? {
+        let normalizedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard normalizedText.count >= 2 else { return nil }
+
+        let tokens = normalizedText
+            .split(whereSeparator: \.isWhitespace)
+            .map(String.init)
+            .filter { !$0.isEmpty }
+
+        guard let firstToken = tokens.first else { return nil }
+
+        if tokens.count == 1 {
+            let maxDistance = firstToken.count > 6 ? 2 : 1
+            return .or([
+                .term(firstToken),
+                .prefix(firstToken),
+                .fuzzy(term: firstToken, maxDistance: maxDistance),
+            ])
+        }
+
+        let termClauses = tokens.map { SearchPrimitive.SearchQuery.term($0) }
+        let fuzzyClauses = tokens.map { token in
+            SearchPrimitive.SearchQuery.fuzzy(
+                term: token,
+                maxDistance: token.count > 6 ? 2 : 1
+            )
+        }
+
+        return .or([
+            .phrase(normalizedText),
+            .and(termClauses),
+            .and(fuzzyClauses),
+        ])
     }
 }
 
