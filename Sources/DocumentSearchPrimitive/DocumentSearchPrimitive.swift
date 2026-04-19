@@ -144,7 +144,7 @@ public final class DocumentSearchController: ObservableObject {
         presentationState.isVisible = true
 
         searchTask = Task { [provider] in
-            try? await Task.sleep(for: .milliseconds(300))
+            try? await Task.sleep(nanoseconds: 300_000_000)
             guard !Task.isCancelled else { return }
 
             var collectedMatches: [SearchMatch] = []
