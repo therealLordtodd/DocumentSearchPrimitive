@@ -202,7 +202,7 @@ public struct DocumentSearchBar: View {
         HStack(spacing: theme.spacing.small) {
             TextField(placeholder, text: $query)
                 .textFieldStyle(.roundedBorder)
-                .frame(width: 200)
+                .frame(width: theme.metrics.searchFieldWidth)
                 .focused($isFieldFocused)
                 .onSubmit { onNext() }
                 .onAppear {
@@ -246,8 +246,15 @@ public struct DocumentSearchBar: View {
         }
         .padding(.horizontal, theme.spacing.medium)
         .padding(.vertical, theme.spacing.small)
-        .background(theme.colors.inputBackground, in: RoundedRectangle(cornerRadius: 8))
-        .shadow(color: theme.colors.shadow.opacity(0.15), radius: 4, y: 2)
+        .background(
+            theme.colors.inputBackground,
+            in: RoundedRectangle(cornerRadius: theme.metrics.controlCornerRadius)
+        )
+        .shadow(
+            color: theme.colors.shadow.opacity(theme.metrics.searchShadowOpacity),
+            radius: theme.metrics.searchShadowRadius,
+            y: theme.metrics.searchShadowYOffset
+        )
         .documentSearchEscapeDismiss(onDismiss: onDismiss)
     }
 }
