@@ -30,8 +30,8 @@ Keep this package focused on reusable reader search chrome and provider-bound se
 
 ## Primary Documentation
 
-- Host-facing usage + API reference: `/Users/todd/Programming/Packages/DocumentSearchPrimitive/README.md`
-- Portfolio integration guide: `/Users/todd/Programming/Packages/ReaderKit/docs/reader-stack-integration-guide.md`
+- Host-facing usage + API reference: `/Users/todd/Building - Apple/Packages/DocumentSearchPrimitive/README.md`
+- Portfolio integration guide: `/Users/todd/Building - Apple/Packages/ReaderKit/docs/reader-stack-integration-guide.md`
 
 ## Primitives-First Development
 
