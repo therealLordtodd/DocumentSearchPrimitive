@@ -8,6 +8,17 @@ Keep this package focused on reusable reader search chrome and provider-bound se
 
 **Tech stack:** Swift 6.0 / SwiftUI / Foundation.
 
+## Repositories & Local Paths
+
+| Package | Repository | Local Path |
+|---------|------------|------------|
+| **DocumentSearchPrimitive** | https://github.com/therealLordtodd/DocumentSearchPrimitive.git | `/Users/todd/Building - Apple/Packages/DocumentSearchPrimitive` |
+
+## Build & Test
+
+- Build: `swift build`
+- Test: `swift test`
+
 ## Key Types
 
 - `DocumentSearchController` — `@MainActor` `ObservableObject` owning search state and navigation
