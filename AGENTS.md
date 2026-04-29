@@ -39,6 +39,10 @@ Keep this package focused on reusable reader search chrome and provider-bound se
 - **Native find handles visuals.** Rendering highlights and scroll-to-match are the renderer's job (PDFKit, WKWebView, NSTextView). This primitive coordinates; it does not paint highlights itself.
 - **Providers over UI composition.** CRK's cross-doc coordinator aggregates `DocumentSearchProvider` instances — not `DocumentSearchController` instances and certainly not UI views.
 
+## Performance Posture
+
+Hot path is per-keystroke query update on `DocumentSearchController`. `DocumentSearchSearchPrimitiveSupport.query(for:)` short-circuits on text under 2 chars; query construction is a fixed handful of allocations per call (token split + small array of `SearchQuery` clauses). Actual ranking is delegated to `SearchPrimitive` (BM25). Search execution runs through the host-supplied `DocumentSearchProvider` inside a `Task` that's cancelled and replaced on each new query — no work piles up. Test suite: 5 tests in 0.36s; the two ~0.36s tests exercise the controller's task-replacement loop (justified). Reviewed 2026-04-29 (Speed & Clarity audit round 1).
+
 ## Primary Documentation
 
 - Host-facing usage + API reference: `/Users/todd/Building - Apple/Packages/DocumentSearchPrimitive/README.md`
